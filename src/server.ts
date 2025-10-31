@@ -17,6 +17,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', createApiRouter(agentService));
 
 // Root route - serve the main page
+// Note: For production deployment, add rate limiting middleware to prevent abuse
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
