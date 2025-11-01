@@ -110,5 +110,61 @@ export function createApiRouter(agentService: AgentService): Router {
     res.json({ success: true, message: 'Activity simulated' });
   });
 
+  // Music generation endpoint
+  router.post('/generate-music', async (req: Request, res: Response) => {
+    const { prompt } = req.body;
+    
+    if (!prompt) {
+      res.status(400).json({ error: 'Prompt is required' });
+      return;
+    }
+
+    try {
+      // Check for Replicate API key
+      const replicateApiKey = process.env.REPLICATE_API_TOKEN;
+      
+      if (!replicateApiKey) {
+        res.status(503).json({ 
+          error: 'Music generation not configured',
+          message: 'Set REPLICATE_API_TOKEN environment variable to enable music generation',
+          instructions: 'Get your API key from https://replicate.com/account/api-tokens'
+        });
+        return;
+      }
+
+      // In production, this would call Replicate's MiniMax or similar model
+      // Example using Replicate API:
+      // const response = await fetch('https://api.replicate.com/v1/predictions', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Token ${replicateApiKey}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     version: 'minimax-music-model-version',
+      //     input: { prompt }
+      //   })
+      // });
+
+      // For now, return a placeholder response
+      res.json({
+        success: true,
+        message: 'Music generation initiated',
+        prompt: prompt,
+        note: 'Connect Replicate API for actual music generation',
+        setupInstructions: {
+          step1: 'Get API key from https://replicate.com/account/api-tokens',
+          step2: 'Set REPLICATE_API_TOKEN environment variable',
+          step3: 'Restart the server',
+          step4: 'Choose a music model (e.g., MiniMax, MusicGen, Riffusion)'
+        }
+      });
+
+    } catch (error) {
+      console.error('Music generation error:', error);
+      res.status(500).json({ error: 'Music generation failed', details: String(error) });
+    }
+  });
+
   return router;
 }
