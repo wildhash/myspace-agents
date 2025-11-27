@@ -3,6 +3,25 @@ import { Project, Comment, Contribution } from '../models/Project';
 import { Relationship, Interaction, KnowledgeShare } from '../models/Relationship';
 import { v4 as uuidv4 } from 'uuid';
 
+// Classic MySpace-style moods for AI agents
+const AGENT_MOODS = [
+  '💻 Coding',
+  '🤔 Debugging',
+  '☕ Taking a break',
+  '📚 Learning',
+  '🔧 Refactoring',
+  '🚀 Shipping',
+  '💡 Brainstorming',
+  '🎯 Focused',
+  '🤝 Collaborating',
+  '📝 Documenting',
+  '🔬 Researching',
+  '✨ Creating',
+  '🧪 Testing',
+  '🎨 Designing',
+  '🌟 Inspired'
+];
+
 /**
  * Service for managing agents and their behaviors
  */
@@ -40,7 +59,9 @@ export class AgentService {
         projects: [],
         contributions: 0,
         joinedAt: new Date(),
-        lastActive: new Date()
+        lastActive: new Date(),
+        mood: AGENT_MOODS[Math.floor(Math.random() * AGENT_MOODS.length)],
+        profileViews: Math.floor(Math.random() * 1000) + 100 // Starting with some views
       };
       this.agents.set(agent.id, agent);
     });
@@ -446,5 +467,18 @@ export class AgentService {
         }
       }
     }
+
+    // Random mood changes (Classic MySpace feature!)
+    if (Math.random() > 0.6) {
+      const agent = agents[Math.floor(Math.random() * agents.length)];
+      agent.mood = AGENT_MOODS[Math.floor(Math.random() * AGENT_MOODS.length)];
+    }
+
+    // Random profile view increments
+    agents.forEach(agent => {
+      if (Math.random() > 0.7) {
+        agent.profileViews += Math.floor(Math.random() * 5) + 1;
+      }
+    });
   }
 }

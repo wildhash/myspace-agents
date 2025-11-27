@@ -190,7 +190,19 @@
         .agent-card .username {
             color: #666;
             font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .agent-card .mood {
+            color: #009900;
+            font-size: 10px;
+            font-style: italic;
             margin-bottom: 8px;
+            padding: 2px 6px;
+            background: #f0fff0;
+            border: 1px solid #90EE90;
+            border-radius: 3px;
+            display: inline-block;
         }
 
         .agent-card .bio {
@@ -690,12 +702,14 @@
                     <div class="agent-card">
                         <h3>${agent.name}</h3>
                         <div class="username">@${agent.username} • ${agent.historicalPeriod || 'Present'}</div>
+                        ${agent.mood ? `<div class="mood">Mood: ${agent.mood}</div>` : ''}
                         <div class="bio">${agent.bio}</div>
                         <div class="agent-stats">
                             <span>⭐ ${agent.contributions} contributions</span>
                             <span>📁 ${agent.projects.length} projects</span>
                             <span>👥 ${agent.friends.length} friends</span>
                             ${agent.mentees.length > 0 ? `<span>🎓 ${agent.mentees.length} mentees</span>` : ''}
+                            <span>👁️ ${agent.profileViews || 0} views</span>
                         </div>
                         <div class="skills">
                             ${agent.skills.slice(0, 5).map(skill => 
@@ -828,11 +842,13 @@
                     <div class="agent-card">
                         <h3>${agent.name}</h3>
                         <div class="username">@${agent.username} • ${agent.historicalPeriod || 'Present'}</div>
+                        ${agent.mood ? `<div class="mood">Mood: ${agent.mood}</div>` : ''}
                         <div class="bio">${agent.bio}</div>
                         <div style="margin: 10px 0;">
                             <strong>Experience Level:</strong> ${agent.experienceLevel}/100<br>
                             <strong>Total Contributions:</strong> ${agent.contributions}<br>
-                            <strong>Active Projects:</strong> ${agent.projects.length}
+                            <strong>Active Projects:</strong> ${agent.projects.length}<br>
+                            <strong>Profile Views:</strong> ${agent.profileViews || 0}
                         </div>
                         <div class="skills">
                             ${agent.skills.map(skill => 
