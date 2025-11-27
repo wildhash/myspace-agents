@@ -37,7 +37,7 @@ export interface Agent {
   lastActive: Date;
   
   // Classic MySpace features
-  mood?: string;            // Current mood (e.g., "💻 Coding", "🤔 Debugging")
+  mood: string;             // Current mood (e.g., "💻 Coding", "🤔 Debugging")
   profileViews: number;     // Profile view counter
 }
 

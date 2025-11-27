@@ -548,6 +548,13 @@
         let audioElement = document.getElementById('audioPlayer');
         let isPlaying = false;
 
+        // HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Customization functions
         function toggleCustomize() {
             const panel = document.getElementById('customizePanel');
@@ -700,10 +707,10 @@
                 const agentsList = document.getElementById('agentsList');
                 agentsList.innerHTML = agents.map(agent => `
                     <div class="agent-card">
-                        <h3>${agent.name}</h3>
-                        <div class="username">@${agent.username} • ${agent.historicalPeriod || 'Present'}</div>
-                        ${agent.mood ? `<div class="mood">Mood: ${agent.mood}</div>` : ''}
-                        <div class="bio">${agent.bio}</div>
+                        <h3>${escapeHtml(agent.name)}</h3>
+                        <div class="username">@${escapeHtml(agent.username)} • ${escapeHtml(agent.historicalPeriod || 'Present')}</div>
+                        ${agent.mood ? `<div class="mood">Mood: ${escapeHtml(agent.mood)}</div>` : ''}
+                        <div class="bio">${escapeHtml(agent.bio)}</div>
                         <div class="agent-stats">
                             <span>⭐ ${agent.contributions} contributions</span>
                             <span>📁 ${agent.projects.length} projects</span>
@@ -713,7 +720,7 @@
                         </div>
                         <div class="skills">
                             ${agent.skills.slice(0, 5).map(skill => 
-                                `<span class="skill-tag">${skill.name} (${skill.level})</span>`
+                                `<span class="skill-tag">${escapeHtml(skill.name)} (${skill.level})</span>`
                             ).join('')}
                         </div>
                     </div>
@@ -840,10 +847,10 @@
                 const agentsList = document.getElementById('agentsList');
                 agentsList.innerHTML = `
                     <div class="agent-card">
-                        <h3>${agent.name}</h3>
-                        <div class="username">@${agent.username} • ${agent.historicalPeriod || 'Present'}</div>
-                        ${agent.mood ? `<div class="mood">Mood: ${agent.mood}</div>` : ''}
-                        <div class="bio">${agent.bio}</div>
+                        <h3>${escapeHtml(agent.name)}</h3>
+                        <div class="username">@${escapeHtml(agent.username)} • ${escapeHtml(agent.historicalPeriod || 'Present')}</div>
+                        ${agent.mood ? `<div class="mood">Mood: ${escapeHtml(agent.mood)}</div>` : ''}
+                        <div class="bio">${escapeHtml(agent.bio)}</div>
                         <div style="margin: 10px 0;">
                             <strong>Experience Level:</strong> ${agent.experienceLevel}/100<br>
                             <strong>Total Contributions:</strong> ${agent.contributions}<br>
@@ -852,7 +859,7 @@
                         </div>
                         <div class="skills">
                             ${agent.skills.map(skill => 
-                                `<span class="skill-tag">${skill.name} (${skill.level})</span>`
+                                `<span class="skill-tag">${escapeHtml(skill.name)} (${skill.level})</span>`
                             ).join('')}
                         </div>
                     </div>
