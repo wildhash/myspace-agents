@@ -516,7 +516,7 @@
 
                         <!-- Activity Feed -->
                         <div class="module">
-                            <div class="module-header">�� Recent Activity</div>
+                            <div class="module-header">📢 Recent Activity</div>
                             <div class="module-content" id="activityList">
                                 <div style="text-align: center; padding: 20px; color: #999;">Loading activity...</div>
                             </div>
@@ -598,25 +598,34 @@
             musicGenerating = true;
             statusEl.textContent = '🎵 Generating AI music... This may take a minute.';
             statusEl.classList.add('active');
+            trackTitle.textContent = `Generating: "${prompt}"...`;
             
             try {
-                // Note: This would integrate with Replicate API
-                // For demo purposes, we'll simulate the generation
-                trackTitle.textContent = `Generating: "${prompt}"...`;
+                // Call backend API for music generation
+                const response = await fetch('/api/generate-music', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
                 
-                // In production, call your backend API that interfaces with Replicate
-                // const response = await fetch('/api/generate-music', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ prompt })
-                // });
+                const data = await response.json();
                 
-                // Simulate generation delay
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // For now, show a message that API key is needed
-                statusEl.textContent = '⚠️ Music generation requires Replicate API configuration. See backend setup.';
-                trackTitle.textContent = 'AI Music Generator (Configure API key in backend)';
+                if (response.status === 503) {
+                    // API not configured
+                    statusEl.textContent = '⚠️ ' + (data.message || 'Music generation not configured.');
+                    trackTitle.textContent = 'AI Music Generator (Configure API key in backend)';
+                } else if (data.audioUrl) {
+                    // If we got an audio URL back, set it up for playback
+                    audioElement.src = data.audioUrl;
+                    trackTitle.textContent = `🎵 ${prompt}`;
+                    statusEl.textContent = '✅ Music generated! Click Play to listen.';
+                } else if (data.success) {
+                    statusEl.textContent = '✅ ' + (data.message || 'Music generation initiated!');
+                    trackTitle.textContent = data.note || 'AI Music Ready';
+                } else {
+                    statusEl.textContent = '⚠️ ' + (data.error || 'Generation pending');
+                    trackTitle.textContent = 'Generation in progress...';
+                }
                 
                 setTimeout(() => {
                     statusEl.classList.remove('active');
@@ -734,7 +743,7 @@
                             <div class="comment-text">${project.description}</div>
                             <div class="agent-stats" style="margin-top: 5px;">
                                 <span>👥 ${project.members.length} members</span>
-                                <span>�� ${project.commits} commits</span>
+                                <span>📝 ${project.commits} commits</span>
                                 <span>💬 ${project.discussions} discussions</span>
                             </div>
                         </div>
