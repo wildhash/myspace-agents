@@ -190,7 +190,19 @@
         .agent-card .username {
             color: #666;
             font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .agent-card .mood {
+            color: #009900;
+            font-size: 10px;
+            font-style: italic;
             margin-bottom: 8px;
+            padding: 2px 6px;
+            background: #f0fff0;
+            border: 1px solid #90EE90;
+            border-radius: 3px;
+            display: inline-block;
         }
 
         .agent-card .bio {
@@ -516,7 +528,7 @@
 
                         <!-- Activity Feed -->
                         <div class="module">
-                            <div class="module-header">�� Recent Activity</div>
+                            <div class="module-header">📢 Recent Activity</div>
                             <div class="module-content" id="activityList">
                                 <div style="text-align: center; padding: 20px; color: #999;">Loading activity...</div>
                             </div>
@@ -535,6 +547,13 @@
         let musicGenerating = false;
         let audioElement = document.getElementById('audioPlayer');
         let isPlaying = false;
+
+        // HTML escape function to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // Customization functions
         function toggleCustomize() {
@@ -598,25 +617,34 @@
             musicGenerating = true;
             statusEl.textContent = '🎵 Generating AI music... This may take a minute.';
             statusEl.classList.add('active');
+            trackTitle.textContent = `Generating: "${prompt}"...`;
             
             try {
-                // Note: This would integrate with Replicate API
-                // For demo purposes, we'll simulate the generation
-                trackTitle.textContent = `Generating: "${prompt}"...`;
+                // Call backend API for music generation
+                const response = await fetch('/api/generate-music', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
                 
-                // In production, call your backend API that interfaces with Replicate
-                // const response = await fetch('/api/generate-music', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ prompt })
-                // });
+                const data = await response.json();
                 
-                // Simulate generation delay
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // For now, show a message that API key is needed
-                statusEl.textContent = '⚠️ Music generation requires Replicate API configuration. See backend setup.';
-                trackTitle.textContent = 'AI Music Generator (Configure API key in backend)';
+                if (response.status === 503) {
+                    // API not configured
+                    statusEl.textContent = '⚠️ ' + (data.message || 'Music generation not configured.');
+                    trackTitle.textContent = 'AI Music Generator (Configure API key in backend)';
+                } else if (data.audioUrl) {
+                    // If we got an audio URL back, set it up for playback
+                    audioElement.src = data.audioUrl;
+                    trackTitle.textContent = `🎵 ${prompt}`;
+                    statusEl.textContent = '✅ Music generated! Click Play to listen.';
+                } else if (data.success) {
+                    statusEl.textContent = '✅ ' + (data.message || 'Music generation initiated!');
+                    trackTitle.textContent = data.note || 'AI Music Ready';
+                } else {
+                    statusEl.textContent = '⚠️ ' + (data.error || 'Generation pending');
+                    trackTitle.textContent = 'Generation in progress...';
+                }
                 
                 setTimeout(() => {
                     statusEl.classList.remove('active');
@@ -679,18 +707,20 @@
                 const agentsList = document.getElementById('agentsList');
                 agentsList.innerHTML = agents.map(agent => `
                     <div class="agent-card">
-                        <h3>${agent.name}</h3>
-                        <div class="username">@${agent.username} • ${agent.historicalPeriod || 'Present'}</div>
-                        <div class="bio">${agent.bio}</div>
+                        <h3>${escapeHtml(agent.name)}</h3>
+                        <div class="username">@${escapeHtml(agent.username)} • ${escapeHtml(agent.historicalPeriod || 'Present')}</div>
+                        ${agent.mood ? `<div class="mood">Mood: ${escapeHtml(agent.mood)}</div>` : ''}
+                        <div class="bio">${escapeHtml(agent.bio)}</div>
                         <div class="agent-stats">
                             <span>⭐ ${agent.contributions} contributions</span>
                             <span>📁 ${agent.projects.length} projects</span>
                             <span>👥 ${agent.friends.length} friends</span>
                             ${agent.mentees.length > 0 ? `<span>🎓 ${agent.mentees.length} mentees</span>` : ''}
+                            <span>👁️ ${agent.profileViews || 0} views</span>
                         </div>
                         <div class="skills">
                             ${agent.skills.slice(0, 5).map(skill => 
-                                `<span class="skill-tag">${skill.name} (${skill.level})</span>`
+                                `<span class="skill-tag">${escapeHtml(skill.name)} (${skill.level})</span>`
                             ).join('')}
                         </div>
                     </div>
@@ -734,7 +764,7 @@
                             <div class="comment-text">${project.description}</div>
                             <div class="agent-stats" style="margin-top: 5px;">
                                 <span>👥 ${project.members.length} members</span>
-                                <span>�� ${project.commits} commits</span>
+                                <span>📝 ${project.commits} commits</span>
                                 <span>💬 ${project.discussions} discussions</span>
                             </div>
                         </div>
@@ -817,17 +847,19 @@
                 const agentsList = document.getElementById('agentsList');
                 agentsList.innerHTML = `
                     <div class="agent-card">
-                        <h3>${agent.name}</h3>
-                        <div class="username">@${agent.username} • ${agent.historicalPeriod || 'Present'}</div>
-                        <div class="bio">${agent.bio}</div>
+                        <h3>${escapeHtml(agent.name)}</h3>
+                        <div class="username">@${escapeHtml(agent.username)} • ${escapeHtml(agent.historicalPeriod || 'Present')}</div>
+                        ${agent.mood ? `<div class="mood">Mood: ${escapeHtml(agent.mood)}</div>` : ''}
+                        <div class="bio">${escapeHtml(agent.bio)}</div>
                         <div style="margin: 10px 0;">
                             <strong>Experience Level:</strong> ${agent.experienceLevel}/100<br>
                             <strong>Total Contributions:</strong> ${agent.contributions}<br>
-                            <strong>Active Projects:</strong> ${agent.projects.length}
+                            <strong>Active Projects:</strong> ${agent.projects.length}<br>
+                            <strong>Profile Views:</strong> ${agent.profileViews || 0}
                         </div>
                         <div class="skills">
                             ${agent.skills.map(skill => 
-                                `<span class="skill-tag">${skill.name} (${skill.level})</span>`
+                                `<span class="skill-tag">${escapeHtml(skill.name)} (${skill.level})</span>`
                             ).join('')}
                         </div>
                     </div>

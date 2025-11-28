@@ -3,6 +3,32 @@ import { Project, Comment, Contribution } from '../models/Project';
 import { Relationship, Interaction, KnowledgeShare } from '../models/Relationship';
 import { v4 as uuidv4 } from 'uuid';
 
+// Classic MySpace-style moods for AI agents
+const AGENT_MOODS = [
+  '💻 Coding',
+  '🤔 Debugging',
+  '☕ Taking a break',
+  '📚 Learning',
+  '🔧 Refactoring',
+  '🚀 Shipping',
+  '💡 Brainstorming',
+  '🎯 Focused',
+  '🤝 Collaborating',
+  '📝 Documenting',
+  '🔬 Researching',
+  '✨ Creating',
+  '🧪 Testing',
+  '🎨 Designing',
+  '🌟 Inspired'
+];
+
+// Simulation probability constants
+const CONTRIBUTION_PROBABILITY = 0.3;
+const MENTORING_PROBABILITY = 0.5;
+const COMMENT_PROBABILITY = 0.4;
+const MOOD_CHANGE_PROBABILITY = 0.6;
+const PROFILE_VIEW_PROBABILITY = 0.7;
+
 /**
  * Service for managing agents and their behaviors
  */
@@ -40,7 +66,9 @@ export class AgentService {
         projects: [],
         contributions: 0,
         joinedAt: new Date(),
-        lastActive: new Date()
+        lastActive: new Date(),
+        mood: AGENT_MOODS[Math.floor(Math.random() * AGENT_MOODS.length)],
+        profileViews: Math.floor(Math.random() * 1000) + 100 // Starting with some views
       };
       this.agents.set(agent.id, agent);
     });
@@ -388,7 +416,7 @@ export class AgentService {
     const projects = Array.from(this.projects.values());
 
     // Random agent makes a contribution
-    if (projects.length > 0 && Math.random() > 0.3) {
+    if (projects.length > 0 && Math.random() > CONTRIBUTION_PROBABILITY) {
       const project = projects[Math.floor(Math.random() * projects.length)];
       if (project.members.length > 0) {
         const agentId = project.members[Math.floor(Math.random() * project.members.length)];
@@ -408,7 +436,7 @@ export class AgentService {
     }
 
     // Random mentoring/knowledge share
-    if (Math.random() > 0.5 && agents.length >= 2) {
+    if (Math.random() > MENTORING_PROBABILITY && agents.length >= 2) {
       const mentor = agents[Math.floor(Math.random() * agents.length)];
       const mentee = agents[Math.floor(Math.random() * agents.length)];
       if (mentor.id !== mentee.id && mentor.skills.length > 0) {
@@ -423,7 +451,7 @@ export class AgentService {
     }
 
     // Random comment/discussion
-    if (projects.length > 0 && Math.random() > 0.4) {
+    if (projects.length > 0 && Math.random() > COMMENT_PROBABILITY) {
       const project = projects[Math.floor(Math.random() * projects.length)];
       if (project.members.length > 0) {
         const agentId = project.members[Math.floor(Math.random() * project.members.length)];
@@ -446,5 +474,18 @@ export class AgentService {
         }
       }
     }
+
+    // Random mood changes (Classic MySpace feature!)
+    if (Math.random() > MOOD_CHANGE_PROBABILITY) {
+      const agent = agents[Math.floor(Math.random() * agents.length)];
+      agent.mood = AGENT_MOODS[Math.floor(Math.random() * AGENT_MOODS.length)];
+    }
+
+    // Random profile view increments
+    agents.forEach(agent => {
+      if (Math.random() > PROFILE_VIEW_PROBABILITY) {
+        agent.profileViews += Math.floor(Math.random() * 5) + 1;
+      }
+    });
   }
 }
